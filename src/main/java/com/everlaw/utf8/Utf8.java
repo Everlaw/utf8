@@ -14,15 +14,15 @@
 package com.everlaw.utf8;
 
 /**
- * A utility class for constants and operations related to UTF-8.
+ * A utility class for UTF-8 operations.
  *
  * @author Brandon Mintern
  */
-public class Utf8 {
+public final class Utf8 {
 
     /**
      * Converts the Unicode code point beginning at {@code str[index]} to a UTF-8 representation
-     * packed into an {@code int} that can be unpacked as follows:
+     * packed into an {@code int}. The UTF-8 bytes can be unpacked as follows:
      * <pre>{@code
      *  int utf8 = Utf8.toPackedInt(str, index);
      *  byte[] unpacked = new byte[4];
@@ -32,43 +32,44 @@ public class Utf8 {
      *      utf8 >>>= 8;
      *  } while (utf8 != 0);
      * }</pre>
-     * <p>
      * Note: if this method returns successfully and
-     * {@code Character.isHighSurrogate(str.charAt(index))}, then the next character (if there are
-     * any) begins at {@code index + 2}.
+     * {@code Character.isHighSurrogate(str.charAt(index))}, then the next character (if there is
+     * one) begins at {@code index + 2}.
      *
-     * @throws IndexOutOfBoundsException    if {@code index >= str.length()}
-     * @throws IllegalArgumentException     if {@code str[index]} (possibly combined with
-     *                                      {@code str[index + 1]} for surrogate pairs) is not a
-     *                                      valid Unicode code point
+     * @param str the sequence containing the codepoint
+     * @param index the starting index of the codepoint
+     * @return a packed {@code int} as described above
+     * @throws IndexOutOfBoundsException if {@code index >= str.length()}
+     * @throws IllegalArgumentException if {@code str[index]} (possibly combined with
+     *         {@code str[index + 1]} for surrogate pairs) is not a valid UTF-8 code point
      */
     public static int toPackedInt(String str, int index) {
-        // http://en.wikipedia.org/wiki/UTF-8#Description was helpful in implementing this method.
         char c = str.charAt(index);
-        int ch;
+        int codepoint; // the Unicode codepoint beginning at str[index]
         if (Character.isHighSurrogate(c)) {
             if (index + 1 >= str.length()) {
-                throw new IllegalArgumentException("Invalid high surrogate character at " + index);
+                throw new IllegalArgumentException("Unpaired high surrogate character at " + index);
             }
             char low = str.charAt(index + 1);
             if (! Character.isLowSurrogate(low)) {
                 throw new IllegalArgumentException("Invalid surrogate pair at " + index);
             }
-            ch = Character.toCodePoint(c, low);
+            codepoint = Character.toCodePoint(c, low);
         } else if (Character.isLowSurrogate(c)) {
-            throw new IllegalArgumentException("Invalid low surrogate character at " + index);
-        } else if (Character.isDefined(c)) {
-            ch = c;
+            throw new IllegalArgumentException("Unpaired low surrogate character at " + index);
         } else {
-            throw new IllegalArgumentException("Undefined character at " + index);
+            codepoint = c;
         }
-        if (ch < 0x80) {
-            return ch;
+        if (! Character.isValidCodePoint(codepoint)) {
+            throw new IllegalArgumentException("Invalid codepoint " + codepoint);
+        }
+        if (codepoint < 0x80) {
+            return codepoint;
         }
         int bytes;
-        if (ch < 0x800) {
+        if (codepoint < 0x800) {
             bytes = 2;
-        } else if (ch < 0x10000) {
+        } else if (codepoint < 0x10000) {
             bytes = 3;
         } else {
             bytes = 4;
@@ -76,10 +77,12 @@ public class Utf8 {
         int leadingMask = -1 << (8 - bytes) & 0xFF;
         int utf8 = 0;
         for (; bytes > 1; bytes--) {
-            utf8 |= (ch & 0b0011_1111) | 0b1000_0000;
+            utf8 |= (codepoint & 0b0011_1111) | 0b1000_0000;
             utf8 <<= 8;
-            ch >>= 6;
+            codepoint >>= 6;
         }
-        return utf8 | ch | leadingMask;
+        return utf8 | codepoint | leadingMask;
     }
+
+    private Utf8(){}
 }

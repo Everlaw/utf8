@@ -26,12 +26,14 @@ public class Utf8Iterator implements PrimitiveIterator.OfInt {
 
     private final String str;
     /**
-     * When nonzero, holds additional UTF-8 bytes representing the unicode code point that
-     * corresponds to 1-2 chars from str. Refer to {@link Utf8#toPackedInt(String, int)}.
+     * When nonzero, holds additional UTF-8 bytes representing the Unicode code point that
+     * corresponds to 1-2 chars from {@link #str}.
+     *
+     * @see Utf8#toPackedInt(String, int)
      */
     private int utf8 = 0;
     /**
-     * The current index into the next character in str.
+     * The current index into the next character in {@link #str}.
      */
     private int pos = 0;
 
@@ -73,8 +75,7 @@ public class Utf8Iterator implements PrimitiveIterator.OfInt {
      * remaining string.
      */
     public int remainingLength() {
-        String rest = str.substring(pos);
-        int length = com.google.common.base.Utf8.encodedLength(rest);
+        int length = com.google.common.base.Utf8.encodedLength(str.substring(pos));
         for (int u = utf8; u != 0; u >>>= 8) {
             length++;
         }
