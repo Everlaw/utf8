@@ -21,6 +21,20 @@ package com.everlaw.utf8;
 public final class Utf8 {
 
     /**
+     * Returns true iff the given {@code codepoint} is a Unicode character that is also valid as
+     * UTF-8. A surrogate codepoint is only valid UTF-16, not UTF-8.
+     *
+     * @param codepoint the value to check
+     * @return true iff {@code codepoint} can be serialized as UTF-8
+     * @see Character#isValidCodePoint(int)
+     * @see Character#isSurrogate(char)
+     */
+    public static boolean isValid(int codepoint) {
+        return Character.isValidCodePoint(codepoint)
+                && (codepoint < Character.MIN_SURROGATE || codepoint > Character.MAX_SURROGATE);
+    }
+
+    /**
      * Converts the Unicode code point beginning at {@code str[index]} to a UTF-8 representation
      * packed into an {@code int}. The UTF-8 bytes can be unpacked as follows:
      * <pre>{@code
@@ -58,10 +72,24 @@ public final class Utf8 {
         } else if (Character.isLowSurrogate(c)) {
             throw new IllegalArgumentException("Unpaired low surrogate character at " + index);
         } else {
+            // validity will be checked by toPackedInt(codepoint)
             codepoint = c;
         }
-        if (! Character.isValidCodePoint(codepoint)) {
-            throw new IllegalArgumentException("Invalid codepoint " + codepoint);
+        return toPackedInt(codepoint);
+    }
+
+    /**
+     * Converts a Unicode {@code codepoint} to a UTF-8 representation packed into an {@code int}, as
+     * described by {@link #toPackedInt(CharSequence, int)}.
+     *
+     * @param codepoint a Unicode codepoint
+     * @return the packed {@code int}
+     * @throws IllegalArgumentException if {@code ! Utf8.isValid(codepoint)}
+     * @see #isValid(int)
+     */
+    public static int toPackedInt(int codepoint) {
+        if (! isValid(codepoint)) {
+            throw new IllegalArgumentException("Invalid UTF-8 codepoint " + codepoint);
         }
         if (codepoint < 0x80) {
             return codepoint;
