@@ -35,10 +35,10 @@ public final class Utf8 {
     }
 
     /**
-     * Converts the Unicode code point beginning at {@code str[index]} to a UTF-8 representation
+     * Converts the Unicode code point beginning at {@code cseq[index]} to a UTF-8 representation
      * packed into an {@code int}. The UTF-8 bytes can be unpacked as follows:
      * <pre>{@code
-     *  int utf8 = Utf8.toPackedInt(str, index);
+     *  int utf8 = Utf8.toPackedInt(cseq, index);
      *  byte[] unpacked = new byte[4];
      *  int i = 0;
      *  do {
@@ -47,24 +47,24 @@ public final class Utf8 {
      *  } while (utf8 != 0);
      * }</pre>
      * Note: if this method returns successfully and
-     * {@code Character.isHighSurrogate(str.charAt(index))}, then the next character (if there is
+     * {@code Character.isHighSurrogate(cseq.charAt(index))}, then the next character (if there is
      * one) begins at {@code index + 2}.
      *
-     * @param str the sequence containing the codepoint
+     * @param cseq the sequence containing the codepoint
      * @param index the starting index of the codepoint
      * @return a packed {@code int} as described above
-     * @throws IndexOutOfBoundsException if {@code index >= str.length()}
-     * @throws IllegalArgumentException if {@code str[index]} (possibly combined with
-     *         {@code str[index + 1]} for surrogate pairs) is not a valid UTF-8 code point
+     * @throws IndexOutOfBoundsException if {@code index >= cseq.length()}
+     * @throws IllegalArgumentException if {@code cseq[index]} (possibly combined with
+     *         {@code cseq[index + 1]} for surrogate pairs) is not a valid UTF-8 code point
      */
-    public static int toPackedInt(String str, int index) {
-        char c = str.charAt(index);
-        int codepoint; // the Unicode codepoint beginning at str[index]
+    public static int toPackedInt(CharSequence cseq, int index) {
+        char c = cseq.charAt(index);
+        int codepoint; // the Unicode codepoint beginning at cseq[index]
         if (Character.isHighSurrogate(c)) {
-            if (index + 1 >= str.length()) {
+            if (index + 1 >= cseq.length()) {
                 throw new IllegalArgumentException("Unpaired high surrogate character at " + index);
             }
-            char low = str.charAt(index + 1);
+            char low = cseq.charAt(index + 1);
             if (! Character.isLowSurrogate(low)) {
                 throw new IllegalArgumentException("Invalid surrogate pair at " + index);
             }
