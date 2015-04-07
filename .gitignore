@@ -1,0 +1,15 @@
+*.class
+
+target/
+
+# Eclipse
+.settings/
+.project
+.classpath
+
+# NetBeans
+nb-configuration.xml
+
+# Temporary files
+*~
+.*.swp

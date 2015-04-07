@@ -1,34 +1,50 @@
+/*
+ * Copyright (C) 2015 Everlaw
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.everlaw.utf8;
 
 import java.util.NoSuchElementException;
 import java.util.PrimitiveIterator;
 
 /**
- * Iterates over the UTF-8 bytes of a given String. Each call to {@link #nextInt} returns an int
- * between 0 and 255, inclusive. Each call to {@link #nextByte} returns {@code (byte) nextInt()}.
+ * Iterates over the UTF-8 bytes of a given {@link CharSequence}. Each call to {@link #nextInt}
+ * returns an int between 0 and 255, inclusive. Each call to {@link #nextByte} returns
+ * {@code (byte) nextInt()}.
  *
  * @author Brandon Mintern
  */
 public class Utf8Iterator implements PrimitiveIterator.OfInt {
 
-    private final String str;
+    private final CharSequence cseq;
     /**
-     * When nonzero, holds additional UTF-8 bytes representing the unicode code point that
-     * corresponds to 1-2 chars from str. Refer to {@link Utf8#toPackedInt(String, int)}.
+     * When nonzero, holds additional UTF-8 bytes representing the Unicode code point that
+     * corresponds to 1-2 chars from {@link #cseq}.
+     *
+     * @see Utf8#toPackedInt(CharSequence, int)
      */
     private int utf8 = 0;
     /**
-     * The current index into the next character in str.
+     * The current index into the next character in {@link #cseq}.
      */
     private int pos = 0;
 
-    public Utf8Iterator(String s) {
-        str = s;
+    public Utf8Iterator(CharSequence s) {
+        cseq = s;
     }
 
     @Override
     public boolean hasNext() {
-        return utf8 != 0 || pos < str.length();
+        return utf8 != 0 || pos < cseq.length();
     }
 
     public byte nextByte() {
@@ -42,9 +58,9 @@ public class Utf8Iterator implements PrimitiveIterator.OfInt {
             utf8 >>>= 8;
             return b;
         }
-        if (pos < str.length()) {
-            utf8 = Utf8.toPackedInt(str, pos);
-            pos += Character.isHighSurrogate(str.charAt(pos)) ? 2 : 1;
+        if (pos < cseq.length()) {
+            utf8 = Utf8.toPackedInt(cseq, pos);
+            pos += Character.isHighSurrogate(cseq.charAt(pos)) ? 2 : 1;
             if (utf8 == 0) {
                 // Must handle NUL explicitly.
                 return 0;
@@ -60,8 +76,7 @@ public class Utf8Iterator implements PrimitiveIterator.OfInt {
      * remaining string.
      */
     public int remainingLength() {
-        String rest = str.substring(pos);
-        int length = com.google.common.base.Utf8.encodedLength(rest);
+        int length = com.google.common.base.Utf8.encodedLength(cseq.subSequence(pos, cseq.length()));
         for (int u = utf8; u != 0; u >>>= 8) {
             length++;
         }
