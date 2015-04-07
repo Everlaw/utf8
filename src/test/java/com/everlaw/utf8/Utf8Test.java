@@ -22,7 +22,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 /**
- * Tests Everlaw's {@link Utf8} utility methods.
+ * Tests Everlaw's {@link Utf8} utility methods. Where reasonable, we exhaustively test all possible
+ * input values.
  *
  * @author Brandon Mintern
  */
@@ -113,6 +114,64 @@ public class Utf8Test {
         for (String s: Arrays.asList("hello world", "\uFFFC\uFFFD\uFFFE\uFFFF")) {
             for (int i = 0; i < s.length(); i++) {
                 checkPacked(Utf8.toPackedInt(s, i), s.charAt(i));
+            }
+        }
+    }
+
+    @Test
+    public void testIsContinuationByteForBytes() {
+        for (byte b = (byte) 0b1000_0000; b != (byte) 0b1100_0000; b++) {
+            assertTrue(Utf8.isContinuationByte(b));
+        }
+        for (byte b = (byte) 0b1100_0000; b != (byte) 0b1000_0000; b++){
+            assertFalse(Utf8.isContinuationByte(b));
+        }
+    }
+
+    @Test
+    public void testIsContinuationByteForInts() {
+        for (int b = 0; b <= 0xFF; b++) {
+            assertEquals(b >= 0b10000000 && b <= 0b10111111, Utf8.isContinuationByte(b));
+        }
+    }
+
+    @Test
+    public void testNumContinuationBytesForBytes() {
+        for (byte b = 0; b != (byte) 0b1000_0000; b++) {
+            assertEquals(0, Utf8.numContinuationBytes(b));
+        }
+        for (byte b = (byte) 0b1000_0000; b != (byte) 0b1100_0000; b++) {
+            assertTrue(Utf8.numContinuationBytes(b) < 0);
+        }
+        for (byte b = (byte) 0b1100_0000; b != (byte) 0b1110_0000; b++) {
+            assertEquals(1, Utf8.numContinuationBytes(b));
+        }
+        for (byte b = (byte) 0b1110_0000; b != (byte) 0b1111_0000; b++) {
+            assertEquals(2, Utf8.numContinuationBytes(b));
+        }
+        for (byte b = (byte) 0b1111_0000; b != (byte) 0b1111_1000; b++) {
+            assertEquals(3, Utf8.numContinuationBytes(b));
+        }
+        for (byte b = (byte) 0b1111_1000; b != 0; b++) {
+            assertTrue(Utf8.numContinuationBytes(b) < 0);
+        }
+    }
+
+    @Test
+    public void testNumContinuationBytesForInts() {
+        for (int b = 0; b <= 0xFF; b++) {
+            if (b <= 0b0111_1111) {
+                assertEquals(0, Utf8.numContinuationBytes(b));
+            } else if (b <= 0b1011_1111) {
+                assertTrue(Utf8.numContinuationBytes(b) < 0);
+            } else if (b <= 0b1101_1111) {
+                assertEquals(1, Utf8.numContinuationBytes(b));
+            } else if (b <= 0b1110_1111) {
+                assertEquals(2, Utf8.numContinuationBytes(b));
+            } else if (b <= 0b1111_0111) {
+                assertEquals(3, Utf8.numContinuationBytes(b));
+            } else {
+                assertTrue(Utf8.numContinuationBytes(b) < 0);
             }
         }
     }

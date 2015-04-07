@@ -112,5 +112,56 @@ public final class Utf8 {
         return utf8 | codepoint | leadingMask;
     }
 
+    /**
+     * Returns {@code true} iff {@code b} is a valid UTF-8 continuation byte. Continuation bytes
+     * match the pattern {@code 0b10xxxxxx}.
+     * <p>
+     * This method works correctly for values between -128 and 255 (inclusive), meaning that it
+     * works equally well for {@code byte}s, {@code char}s, and {@code int}s that represent
+     * unsigned bytes (e.g., literals like {@code 0xAA}). This method does <b>not</b> throw if
+     * {@code b < -128} or {@code b > 255}; it simply returns an undefined value.
+     */
+    public static boolean isContinuationByte(int b) {
+        return (b & 0b1100_0000) == 0b1000_0000;
+    }
+
+    /**
+     * Returns the number of expected continuation bytes given a leading UTF-8 byte {@code b}. If
+     * {@code b} is not a valid leading byte, then a negative number is returned.
+     * <p>
+     * As with {@link #isContinuationByte(int)}, this method works correctly for all values between
+     * -128 and 255 (inclusive). If {@code b < -128} or {@code b > 255}, it returns an undefined
+     * value.
+     * <p>
+     * <b>Forward compatibility:</b> For values between -128 and 255 that represent invalid leading
+     * continuation bytes, users can assume only that a negative value is returned. The current
+     * implementation returns -1, but future versions may return other negative values.
+     */
+    public static int numContinuationBytes(int b) {
+        if ((b & 0b1000_0000) == 0) {
+            // 1-byte UTF-8, so no continuation bytes
+            return 0;
+        }
+        switch (b & 0b1111_0000) {
+            case 0b1100_0000:
+            case 0b1101_0000:
+                // 2-byte UTF-8 means 1 continuation byte
+                return 1;
+            case 0b1110_0000:
+                // 3-byte UTF-8
+                return 2;
+            case 0b1111_0000:
+                // It matches 1111_xxxx; 4-byte UTF-8 matches 1111_0xxx.
+                if ((b & 0b1000) == 0) {
+                    return 3;
+                }
+                // Invalid: Too many continuation bytes.
+                return -1;
+            default:
+                // Invalid: Continuation byte.
+                return -1;
+        }
+    }
+
     private Utf8(){}
 }
