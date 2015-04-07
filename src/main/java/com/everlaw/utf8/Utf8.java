@@ -120,6 +120,9 @@ public final class Utf8 {
      * works equally well for {@code byte}s, {@code char}s, and {@code int}s that represent
      * unsigned bytes (e.g., literals like {@code 0xAA}). This method does <b>not</b> throw if
      * {@code b < -128} or {@code b > 255}; it simply returns an undefined value.
+     *
+     * @param b a byte value between -128 and 127, or 0 and 255 (inclusive)
+     * @return whether {@code b} is a continuation byte
      */
     public static boolean isContinuationByte(int b) {
         return (b & 0b1100_0000) == 0b1000_0000;
@@ -136,6 +139,9 @@ public final class Utf8 {
      * <b>Forward compatibility:</b> For values between -128 and 255 that represent invalid leading
      * continuation bytes, users can assume only that a negative value is returned. The current
      * implementation returns -1, but future versions may return other negative values.
+     *
+     * @param b a byte value between -128 and 127, or 0 and 255 (inclusive)
+     * @return the number of continuation bytes that follow {@code b}, or a negative number
      */
     public static int numContinuationBytes(int b) {
         if ((b & 0b1000_0000) == 0) {
