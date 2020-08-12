@@ -4,7 +4,7 @@
 
     <groupId>com.everlaw</groupId>
     <artifactId>utf8</artifactId>
-    <version>1.0</version>
+    <version>1.0.1</version>
     <name>Everlaw Utf8</name>
     <description>UTF-8 classes and utility methods</description>
     <url>https://github.com/everlaw/utf8</url>
@@ -14,7 +14,7 @@
             <name>Brandon Mintern</name>
             <email>mintern@everlaw.com</email>
             <organization>Everlaw</organization>
-            <organizationUrl>http://everlaw.com</organizationUrl>
+            <organizationUrl>https://www.everlaw.com</organizationUrl>
         </developer>
     </developers>
 
@@ -29,7 +29,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.8.1</version>
                 <configuration>
                     <compilerArgument>-Xlint:unchecked</compilerArgument>
                 </configuration>
@@ -61,12 +61,12 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>18.0</version>
+            <version>29.0-jre</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.12</version>
+            <version>4.13</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -79,7 +79,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.4</version>
+                        <version>3.2.1</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -92,7 +92,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.10.2</version>
+                        <version>3.2.0</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -123,7 +123,7 @@
                     <plugin>
                         <groupId>org.sonatype.plugins</groupId>
                         <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.5</version>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
                             <serverId>everlaw-ossrh</serverId>
