@@ -13,7 +13,7 @@ Maven projects can use this library with a simple POM dependency:
         <dependency>
             <groupId>com.everlaw</groupId>
             <artifactId>utf8</artifactId>
-            <version>1.0</version>
+            <version>1.0.1</version>
         </dependency>
         ...
     </dependencies>
